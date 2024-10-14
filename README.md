@@ -1,4 +1,4 @@
-# Watchlist# Movie Watchlist App 🎬
+#  Movie Watchlist App 🎬
 
 A sleek, responsive web application to search for movies, bookmark favorites, and get detailed information about them. The app is built with React and leverages the OMDb API for movie data. Users can search for movies, add them to a personalized watchlist, and view detailed information about each movie.
 
