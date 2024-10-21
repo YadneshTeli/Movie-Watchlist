@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 
-const Login = ({ setActiveContent }) => {
+const Signup = ({ setActiveContent }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -152,7 +152,7 @@ const Login = ({ setActiveContent }) => {
               },
             }}
           >
-            Sign In
+            Sign Up
           </Button>
           <Box
             sx={{
@@ -213,4 +213,4 @@ const Login = ({ setActiveContent }) => {
   );
 };
 
-export default Login;
+export default Signup;
