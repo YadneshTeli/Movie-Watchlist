@@ -75,7 +75,7 @@ const InfoPage = () => {
           alignItems: "center",
           backgroundColor: "black",
           p: 6,
-          minHeight: "100vh",
+          height: "100vh"
         }}
       >
         {loading ? (
@@ -96,6 +96,7 @@ const InfoPage = () => {
               color: "white",
               borderRadius: "20px",
               padding: "20px",
+              height: "80vh"
             }}
           >
             <Box
@@ -116,7 +117,7 @@ const InfoPage = () => {
                 alt={movieDetails.Title}
                 sx={{
                   width: { xs: "100%", md: "350px" },
-                  height: { xs: "auto", md: "500px" },
+                  height: { xs: "auto", md: "400px" },
                   objectFit: "cover",
                   borderRadius: "10px",
                   margin: "0 auto",

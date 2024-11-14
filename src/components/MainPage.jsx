@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TextField,
   Card,
@@ -22,7 +22,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { useNavigate } from "react-router-dom";
 
-//Using the dark theme frim mui
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
@@ -40,7 +39,6 @@ const darkTheme = createTheme({
   },
 });
 
-// Styled TextField for search input with customized styles
 const SearchBox = styled(TextField)(() => ({
   input: { color: "white" },
   "& .MuiOutlinedInput-root": {
@@ -58,27 +56,55 @@ const SearchBox = styled(TextField)(() => ({
 
 function MainPage() {
   const [movies, setMovies] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("insidious");
+  const [searchTerm, setSearchTerm] = useState("avengers");
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1); // Track page number for infinite scroll
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
 
-  // Function to fetch movies from the OMDB API based on the search term
-  const fetchMovies = async (searchTerm) => {
+  const fetchMovies = async (searchTerm, newPage = 1) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://www.omdbapi.com/?s=${searchTerm}&apikey=3058d4c6`
+        `https://www.omdbapi.com/?s=${searchTerm}&page=${newPage}&apikey=3058d4c6`
       );
-      setMovies(response.data.Search || []);
+      const newMovies = response.data.Search || [];
+      if (newPage === 1) {
+        setMovies(newMovies);
+      } else {
+        setMovies((prevMovies) => [...prevMovies, ...newMovies]);
+      }
       setLoading(false);
     } catch (error) {
       setLoading(false);
     }
   };
 
-  // Effect to fetch users bookmarked movies from local storage on component mount
+  useEffect(() => {
+    fetchMovies(searchTerm, 1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 100 &&
+        !loading
+      ) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading]);
+
+  useEffect(() => {
+    if (page > 1) {
+      fetchMovies(searchTerm, page);
+    }
+  }, [page]);
+
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
     if (loggedInUser) {
@@ -90,74 +116,47 @@ function MainPage() {
     }
   }, [searchTerm]);
 
-  // Function to handle search input changes
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  // Function to handle search submission
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      fetchMovies(searchTerm.trim());
-    } else {
-      setMovies([]);
-    }
+    setPage(1);
+    fetchMovies(searchTerm, 1);
   };
 
-  // Function to close the snackbar notification
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
+    if (reason !== "clickaway") setOpenSnackbar(false);
   };
 
-  // Function to toggle bookmarking a movie
   const handleBookmarkToggle = (movie) => {
     const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!loggedInUser) {
       setOpenSnackbar(true);
       return;
     }
-
-    // Get users from local storage
     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
     const userIndex = storedUsers.findIndex(
       (user) => user.email === loggedInUser.email
     );
-
-    // Get the user's bookmarks
     if (userIndex !== -1) {
       const userBookmarks = storedUsers[userIndex].bookmarkedMovies || [];
-
       if (userBookmarks.some((m) => m.imdbID === movie.imdbID)) {
-        const updatedBookmarks = userBookmarks.filter(
+        storedUsers[userIndex].bookmarkedMovies = userBookmarks.filter(
           (m) => m.imdbID !== movie.imdbID
         );
-        storedUsers[userIndex].bookmarkedMovies = updatedBookmarks;
       } else {
         userBookmarks.push(movie);
         storedUsers[userIndex].bookmarkedMovies = userBookmarks;
       }
-
       localStorage.setItem("users", JSON.stringify(storedUsers));
       setBookmarkedMovies(storedUsers[userIndex].bookmarkedMovies);
     }
   };
 
-  // Function to navigate to movie details page
   const handleKnowMore = (movie) => {
     navigate(`/info/${movie.imdbID}`, { state: { movie } });
   };
 
-  // Fetch movies on initial render
-  useEffect(() => {
-    fetchMovies("insidious");
-  }, []);
-
   return (
-    
     <ThemeProvider theme={darkTheme}>
       {/* Main container */}
       <Box sx={{ flexGrow: 1 }}>
@@ -239,7 +238,7 @@ function MainPage() {
                       image={
                         movie.Poster !== "N/A"
                           ? movie.Poster
-                          : "https://via.placeholder.com/200x300"
+                          : "https://via.placeholder.com/200x300?text=No+Image+Available"
                       }
                       alt={movie.Title}
                       sx={{
@@ -248,8 +247,27 @@ function MainPage() {
                         objectFit: "cover",
                         borderRadius: "10px",
                         margin: "0 auto",
+                        position: "relative",
                       }}
                     />
+                    {movie.Poster === "N/A" && (
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          color: "white",
+                          backgroundColor: "rgba(0, 0, 0, 0.6)",
+                          padding: "5px 10px",
+                          borderRadius: "5px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {movie.Title}
+                      </Typography>
+                    )}
                     <CardContent>
                       <Typography
                         variant="h8"
@@ -298,6 +316,7 @@ function MainPage() {
               </Typography>
             )}
           </Grid>
+          {loading && <Typography color="white">Loading...</Typography>}
         </Box>
 
         {/* A snackbar message to login/register before bookmarking any movies */}
@@ -318,5 +337,4 @@ function MainPage() {
     </ThemeProvider>
   );
 }
-
 export default MainPage;

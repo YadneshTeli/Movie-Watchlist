@@ -82,7 +82,6 @@ const MyList = ({ bookmarkedMovies, setBookmarkedMovies }) => {
   return (
     // Render bookmarked movies
     <Box sx={{ p: 3 }}>
-      
       {/* Title of the bookmarks section */}
       <Typography variant="h4" sx={{ color: "white", marginBottom: 2 }}>
         My Bookmarked Movies
@@ -98,12 +97,12 @@ const MyList = ({ bookmarkedMovies, setBookmarkedMovies }) => {
                 color: "white",
                 height: "100%",
                 borderRadius: "20px",
-                paddingTop: "24px",
-                paddingBottom: "0",
+                padding: "20px",
               }}
             >
               <CardMedia
                 component="img"
+                loading="lazy"
                 image={
                   movie.Poster !== "N/A"
                     ? movie.Poster
@@ -114,13 +113,13 @@ const MyList = ({ bookmarkedMovies, setBookmarkedMovies }) => {
                   width: "200px",
                   height: "300px",
                   objectFit: "cover",
-                  borderRadius: "10px",
+                  borderRadius: "20px",
                   margin: "0 auto",
                 }}
               />
               <CardContent>
                 <Typography
-                  variant="h6"
+                  variant="h9"
                   component="div"
                   sx={{ fontWeight: "bold", textAlign: "center" }}
                 >
