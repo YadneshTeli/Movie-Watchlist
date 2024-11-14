@@ -157,6 +157,7 @@ function MainPage() {
   }, []);
 
   return (
+    
     <ThemeProvider theme={darkTheme}>
       {/* Main container */}
       <Box sx={{ flexGrow: 1 }}>
@@ -229,12 +230,12 @@ function MainPage() {
                       color: "white",
                       height: "100%",
                       borderRadius: "20px",
-                      paddingTop: "24px",
-                      paddingBottom: "0",
+                      padding: "20px",
                     }}
                   >
                     <CardMedia
                       component="img"
+                      loading="lazy"
                       image={
                         movie.Poster !== "N/A"
                           ? movie.Poster
@@ -251,7 +252,7 @@ function MainPage() {
                     />
                     <CardContent>
                       <Typography
-                        variant="h6"
+                        variant="h8"
                         component="div"
                         sx={{ fontWeight: "bold", textAlign: "center" }}
                       >
@@ -265,7 +266,7 @@ function MainPage() {
                         {movie.Year}
                       </Typography>
 
-                      <div className="flex justify-between">
+                      <div className="flex justify-between gap-y-5">
                         <IconButton
                           onClick={() => handleBookmarkToggle(movie)}
                           sx={{ color: "red" }}
