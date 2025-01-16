@@ -22,6 +22,8 @@ Check out the live version of the app here:
 - **Styling**: Tailwind CSS and Material UI for utility-first styling
 - **Deployment**: Vercel (for quick and easy deployment)
 - **Icons**: FontAwesome for various UI icons
+- **API**: OMDb API for movie data
+- **Database**: Supabase
 
 ## 🏗️ Installation & Setup
 
