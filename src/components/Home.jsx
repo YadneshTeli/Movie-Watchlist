@@ -38,6 +38,7 @@ import MyList from "./MyList";
 import Login from "./Login";
 import Mainpage from "./MainPage";
 import Signup from "./Signup";
+import { supabase } from "./supabaseClient";
 
 // Width of the sidebar drawer
 const drawerWidth = 240;
@@ -149,11 +150,14 @@ function Home({ movies, setMovies, bookmarkedMovies, setBookmarkedMovies }) {
   };
 
   // Logs out the user clearing from localStorage
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("supabase_session");
     localStorage.removeItem("loggedInUser");
     setLoggedInUser(null);
     setActiveContent("home");
     setLogoutDialogOpen(false);
+    window.location.reload();
   };
 
   // Opens the logout confirmation dialog

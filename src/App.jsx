@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -6,10 +6,38 @@ import Signup from "./components/Signup";
 import MyList from "./components/MyList";
 import { BookmarkProvider } from "./components/BookMarkContext";
 import InfoPage from "./components/InfoPage";
+import { supabase } from "./components/supabaseClient";
 
 function App() {
+  const [session, setSession] = useState(null);
   const [movies, setMovies] = useState([]);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
+
+  useEffect(() => {
+    // Check for an existing session
+    const storedSession = localStorage.getItem("supabase_session");
+
+    if (storedSession) {
+      setSession(JSON.parse(storedSession));
+    }
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          localStorage.setItem("supabase_session", JSON.stringify(session));
+          setSession(session);
+        } else {
+          localStorage.removeItem("supabase_session");
+          setSession(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <>

@@ -10,13 +10,15 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { supabase } from "./supabaseClient";
 
 const Signup = ({ setActiveContent }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm", "mobile","xs"));
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -32,9 +34,60 @@ const Signup = ({ setActiveContent }) => {
   };
 
   // Function to handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Check if email is already taken
+    const { data: existingUsers, error: fetchError } = await supabase
+      .from("users")
+      .select("email")
+      .eq("email", email);
+
+    if (fetchError) {
+      setSnackbarMessage("An error occurred. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (existingUsers.length > 0) {
+      setSnackbarMessage("Email is already registered.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // Create new user using Supabase authentication
+    const { user, error: signupError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: username
+        },
+      },
+    });
+
+    if (signupError) {
+      setSnackbarMessage(signupError.message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // Insert additional user data (e.g., username) into Supabase database
+    const { data, error: insertError } = await supabase
+      .from("users")
+      .insert([{ email, username }]);
+    console.log('Data:', data);
+    console.log('Error:', insertError);
+
+    if (insertError) {
+      setSnackbarMessage("Failed to save user data.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
     const storedUsers = localStorage.getItem("users");
     const usersArray = storedUsers ? JSON.parse(storedUsers) : [];
 
@@ -48,7 +101,7 @@ const Signup = ({ setActiveContent }) => {
       return;
     }
 
-    const newUser = { username, email };
+    const newUser = { username, email, password};
 
     usersArray.push(newUser);
 
@@ -56,6 +109,7 @@ const Signup = ({ setActiveContent }) => {
 
     setUsername("");
     setEmail("");
+    setPassword("");
 
     // Show success Snackbar
     setSnackbarMessage("Registration successful!");
@@ -120,6 +174,7 @@ const Signup = ({ setActiveContent }) => {
           />
           <TextField
             margin="normal"
+            type="email"
             required
             fullWidth
             id="email"
@@ -128,6 +183,28 @@ const Signup = ({ setActiveContent }) => {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#f44336",
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#f44336",
+              },
+            }}
+          />
+          <TextField
+            margin="normal"
+            type="password"
+            required
+            fullWidth
+            id="password"
+            label="Password"
+            name="password"
+            autoComplete="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "&.Mui-focused fieldset": {

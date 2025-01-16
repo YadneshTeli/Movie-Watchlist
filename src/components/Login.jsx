@@ -9,6 +9,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { supabase } from "./supabaseClient";
 
 // login component handles user login functionality
 const Login = ({ setActiveContent, setLoggedInUser }) => {
@@ -16,6 +17,7 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -32,47 +34,53 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
   };
 
   // function to handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // retrieve users from local storage
-    const storedUsers = localStorage.getItem("users");
-    const usersArray = storedUsers ? JSON.parse(storedUsers) : [];
+    try {
+      // Attempt to sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    // check if the entered email matches an existing user
-    const existingUser = usersArray.find((user) => user.email === email);
+      if (error) {
+        throw new Error(error.message);
+      }
 
-    // if user exists store the user in local storage
-    if (existingUser) {
+      // Store user data
       localStorage.setItem(
         "loggedInUser",
         JSON.stringify({
-          email: existingUser.email,
-          username: existingUser.username,
+          email: data.user.email,
+          username: data.user.user_metadata.username,
         })
       );
 
-      // update loggedin user state
+      // Update logged-in user state
       setLoggedInUser({
-        email: existingUser.email,
-        username: existingUser.username,
+        email: data.user.email,
+        username: data.user.user_metadata.username,
       });
 
-      // display success snackbar message
-      setSnackbarMessage(`Welcome back, ${existingUser.username}!`);
+      localStorage.setItem("supabase_session", JSON.stringify(data.session));
+
+      // Display success snackbar message
+      setSnackbarMessage(`Welcome back, ${data.user.user_metadata.username}!`);
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       setActiveContent("home");
       setEmail("");
-    } else {
-      // if user is not found, show an error message
-      setSnackbarMessage("User not found. Please sign up.");
+      setPassword(""); // Clear password after successful login
+    } catch (err) {
+      // Show error message if authentication fails
+      setSnackbarMessage(err.message);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
-  // function to handle closing of the snackbar
+  // Function to handle closing of the snackbar
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -117,6 +125,29 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#f44336",
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#f44336",
+              },
+            }}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="password"
+            label="Password"
+            type="password"
+            name="password"
+            autoComplete="password"
+            autoFocus
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
                 "&.Mui-focused fieldset": {
@@ -188,7 +219,7 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
             variant="body2"
             sx={{ color: "#9e9e9e", textAlign: isMobile ? "center" : "right" }}
           >
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <span
               onClick={handleSignupClick}
               style={{
