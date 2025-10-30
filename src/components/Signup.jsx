@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 import {
   Box,
   Typography,
@@ -58,7 +59,7 @@ const Signup = ({ setActiveContent }) => {
     }
 
     // Create new user using Supabase authentication
-    const { user, error: signupError } = await supabase.auth.signUp({
+    const { error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -288,6 +289,10 @@ const Signup = ({ setActiveContent }) => {
       </Box>
     </Container>
   );
+};
+
+Signup.propTypes = {
+  setActiveContent: PropTypes.func.isRequired,
 };
 
 export default Signup;

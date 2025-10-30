@@ -1,4 +1,5 @@
 import * as React from "react";
+import PropTypes from "prop-types";
 import {
   AppBar as MuiAppBar,
   Box,
@@ -119,7 +120,7 @@ const darkTheme = createTheme({
   },
 });
 
-function Home({ movies, setMovies, bookmarkedMovies, setBookmarkedMovies }) {
+function Home({ bookmarkedMovies, setBookmarkedMovies }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [activeContent, setActiveContent] = React.useState("home");
@@ -335,5 +336,10 @@ function Home({ movies, setMovies, bookmarkedMovies, setBookmarkedMovies }) {
     </ThemeProvider>
   );
 }
+
+Home.propTypes = {
+  bookmarkedMovies: PropTypes.array.isRequired,
+  setBookmarkedMovies: PropTypes.func.isRequired,
+};
 
 export default Home;

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import PropTypes from "prop-types";
 import {
   Box,
   Typography,
@@ -18,7 +19,6 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -251,6 +251,11 @@ const Login = ({ setActiveContent, setLoggedInUser }) => {
       </Box>
     </Box>
   );
+};
+
+Login.propTypes = {
+  setActiveContent: PropTypes.func.isRequired,
+  setLoggedInUser: PropTypes.func.isRequired,
 };
 
 export default Login;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Card,
@@ -76,7 +76,7 @@ function MainPage() {
         setMovies((prevMovies) => [...prevMovies, ...newMovies]);
       }
       setLoading(false);
-    } catch (error) {
+    } catch {
       setLoading(false);
     }
   };
@@ -103,6 +103,7 @@ function MainPage() {
     if (page > 1) {
       fetchMovies(searchTerm, page);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   useEffect(() => {
@@ -217,7 +218,7 @@ function MainPage() {
         <Box sx={{ p: 3 }}>
           <Grid container spacing={3} columns={10}>
             {movies.length > 0 ? (
-              movies.slice(0, 20).map((movie, index) => (
+              movies.slice(0, 20).map((movie) => (
                 <Grid
                   item
                   size={{ xs: 10, md: 4, sm: 6, lg: 2 }}
